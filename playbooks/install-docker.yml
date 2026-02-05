@@ -79,6 +79,12 @@
       # ドライランではリポジトリが実際に追加されないためパッケージが見つからない
       # そのためドライラン時はエラーを無視
       ignore_errors: "{{ ansible_check_mode }}"
+      register: docker_install_result
+
+    - name: ドライラン時のパッケージインストールエラー説明
+      debug:
+        msg: "ドライランではリポジトリが実際に追加されないため、パッケージインストールエラーを無視しました"
+      when: ansible_check_mode and docker_install_result.failed
 
     - name: Dockerサービス開始・有効化
       systemd:
@@ -88,6 +94,12 @@
       # ドライランではDockerがインストールされないためサービスが存在しない
       # そのためドライラン時はエラーを無視
       ignore_errors: "{{ ansible_check_mode }}"
+      register: docker_service_result
+
+    - name: ドライラン時のサービス開始エラー説明
+      debug:
+        msg: "ドライランではDockerがインストールされないため、サービス開始エラーを無視しました"
+      when: ansible_check_mode and docker_service_result.failed
 
     - name: Dockerバージョン確認
       shell: docker --version
