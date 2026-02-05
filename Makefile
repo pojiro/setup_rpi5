@@ -6,6 +6,16 @@
 ping:
 	ansible rpi5 -m ping
 
+# 個別ホスト確認
+ping-00:
+	ansible rpi5-00 -m ping
+
+ping-01:
+	ansible rpi5-01 -m ping
+
+ping-02:
+	ansible rpi5-02 -m ping
+
 # 詳細なSSH接続確認
 ssh-check:
 	ansible-playbook playbooks/ssh-check.yml
@@ -65,7 +75,10 @@ inventory:
 # ヘルプ
 help:
 	@echo "利用可能なコマンド:"
-	@echo "  make ping        - 基本的なSSH接続確認"
+	@echo "  make ping        - 基本的なSSH接続確認（全台）"
+	@echo "  make ping-00     - rpi5-00のSSH接続確認"
+	@echo "  make ping-01     - rpi5-01のSSH接続確認"
+	@echo "  make ping-02     - rpi5-02のSSH接続確認"
 	@echo "  make ssh-check   - 詳細なSSH接続確認とシステム情報取得"
 	@echo "  make info        - システム情報のみ取得"
 	@echo "  make syntax-check - playbook構文チェック"
