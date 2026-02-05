@@ -1,0 +1,74 @@
+---
+- name: eth0静的IP設定
+  hosts: rpi5
+  become: yes
+  vars:
+    # 設定値（必要に応じて変更してください）
+    static_ip: "192.168.0.100"
+    netmask: "24"
+    gateway: "192.168.0.1"
+    dns_servers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+
+  tasks:
+    - name: 現在のネットワーク設定確認
+      shell: ip addr show eth0
+      register: current_ip
+      changed_when: false
+
+    - name: 現在のIP設定表示
+      debug:
+        msg: "{{ current_ip.stdout_lines }}"
+
+    - name: netplan設定ファイルのバックアップ
+      copy:
+        src: /etc/netplan/01-netcfg.yaml
+        dest: /etc/netplan/01-netcfg.yaml.backup
+        remote_src: yes  # remote_src: yes：リモート → リモート
+      ignore_errors: yes
+
+    - name: netplan設定ファイル作成
+      copy:
+        content: |
+          network:
+            version: 2
+            renderer: networkd
+            ethernets:
+              eth0:
+                dhcp4: false
+                addresses:
+                  - {{ static_ip }}/{{ netmask }}
+                gateway4: {{ gateway }}
+                nameservers:
+                  addresses: {{ dns_servers }}
+        dest: /etc/netplan/01-netcfg.yaml
+        backup: yes
+
+    - name: netplan設定の構文チェック
+      shell: netplan try --timeout=10
+      register: netplan_try
+      changed_when: false
+
+    - name: netplan設定適用
+      shell: netplan apply
+      when: netplan_try.rc == 0
+
+    - name: 設定後のネットワーク状態確認
+      shell: ip addr show eth0
+      register: new_ip
+      changed_when: false
+
+    - name: 新しいIP設定表示
+      debug:
+        msg: "{{ new_ip.stdout_lines }}"
+
+    - name: ゲートウェイ疎通確認
+      shell: ping -c 3 {{ gateway }}
+      register: ping_result
+      changed_when: false
+      ignore_errors: yes
+
+    - name: 疎通結果表示
+      debug:
+        msg: "ゲートウェイ疎通: {{ 'OK' if ping_result.rc == 0 else 'NG' }}"

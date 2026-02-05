@@ -1,0 +1,27 @@
+---
+- name: Ubuntu自動アップデート無効化
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: 自動パッケージリスト更新を無効化
+      lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: '^APT::Periodic::Update-Package-Lists'
+        line: 'APT::Periodic::Update-Package-Lists "0";'
+        backup: yes
+
+    - name: 自動アップグレードを無効化
+      lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: '^APT::Periodic::Unattended-Upgrade'
+        line: 'APT::Periodic::Unattended-Upgrade "0";'
+
+    - name: 設定確認
+      slurp:
+        src: /etc/apt/apt.conf.d/20auto-upgrades
+      register: config_content
+
+    - name: 現在の設定表示
+      debug:
+        msg: "{{ config_content.content | b64decode }}"
