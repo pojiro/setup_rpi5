@@ -34,6 +34,14 @@ setup-static-ip:
 setup-static-ip-dry:
 	ansible-playbook --check playbooks/setup-static-ip.yml
 
+# Docker インストール
+install-docker:
+	ansible-playbook playbooks/install-docker.yml
+
+# Docker インストール（ドライラン）
+install-docker-dry:
+	ansible-playbook --check playbooks/install-docker.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -59,3 +67,5 @@ help:
 	@echo "  make disable-auto-update-dry - 自動アップデート無効化（ドライラン）"
 	@echo "  make setup-static-ip         - eth0静的IP設定"
 	@echo "  make setup-static-ip-dry     - eth0静的IP設定（ドライラン）"
+	@echo "  make install-docker          - Docker インストール"
+	@echo "  make install-docker-dry      - Docker インストール（ドライラン）"

@@ -1,0 +1,123 @@
+---
+- name: Docker インストール
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: システム情報確認
+      debug:
+        msg: |
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          アーキテクチャ: {{ ansible_architecture }}
+
+    - name: 既存のDockerパッケージを削除
+      shell: |
+        installed_packages=$(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc 2>/dev/null | cut -f1 || true)
+        if [ -n "$installed_packages" ]; then
+          apt remove -y $installed_packages
+        else
+          echo "削除対象のパッケージが見つかりません"
+        fi
+      register: remove_result
+
+    - name: パッケージ削除結果表示
+      debug:
+        msg: "{{ remove_result.stdout_lines }}"
+
+    - name: パッケージリスト更新
+      apt:
+        update_cache: yes
+
+    - name: 必要なパッケージをインストール
+      apt:
+        name:
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Docker GPGキー用ディレクトリ作成
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Docker公式GPGキーをダウンロード
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Ubuntu codename取得
+      shell: . /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}"
+      register: ubuntu_codename
+      changed_when: false
+
+    - name: Dockerリポジトリを追加
+      copy:
+        content: |
+          Types: deb
+          URIs: https://download.docker.com/linux/ubuntu
+          Suites: {{ ubuntu_codename.stdout }}
+          Components: stable
+          Signed-By: /etc/apt/keyrings/docker.asc
+        dest: /etc/apt/sources.list.d/docker.sources
+        mode: '0644'
+
+    - name: パッケージリスト更新（Dockerリポジトリ追加後）
+      apt:
+        update_cache: yes
+
+    - name: Dockerパッケージをインストール
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+      # ドライランではリポジトリが実際に追加されないためパッケージが見つからない
+      # そのためドライラン時はエラーを無視
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: Dockerサービス開始・有効化
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      # ドライランではDockerがインストールされないためサービスが存在しない
+      # そのためドライラン時はエラーを無視
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: Dockerバージョン確認
+      shell: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Docker Composeバージョン確認
+      shell: docker compose version
+      register: compose_version
+      changed_when: false
+
+    - name: インストール結果表示
+      debug:
+        msg: |
+          {{ docker_version.stdout }}
+          {{ compose_version.stdout }}
+
+    - name: Dockerサービス状態確認
+      shell: systemctl status docker --no-pager
+      register: docker_status
+      changed_when: false
+
+    - name: Dockerサービス状態表示
+      debug:
+        msg: "{{ docker_status.stdout_lines }}"
+
+    - name: Docker動作テスト（hello-world）
+      shell: docker run hello-world
+      register: hello_world_result
+
+    - name: Docker動作テスト結果表示
+      debug:
+        msg: "{{ hello_world_result.stdout_lines }}"
