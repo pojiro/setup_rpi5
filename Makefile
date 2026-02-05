@@ -42,6 +42,14 @@ install-docker:
 install-docker-dry:
 	ansible-playbook --check playbooks/install-docker.yml
 
+# zenoh バイナリインストール
+install-zenoh:
+	ansible-playbook playbooks/install-zenoh.yml
+
+# zenoh バイナリインストール（ドライラン）
+install-zenoh-dry:
+	ansible-playbook --check playbooks/install-zenoh.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -69,3 +77,5 @@ help:
 	@echo "  make setup-static-ip-dry     - eth0静的IP設定（ドライラン）"
 	@echo "  make install-docker          - Docker インストール"
 	@echo "  make install-docker-dry      - Docker インストール（ドライラン）"
+	@echo "  make install-zenoh           - zenoh バイナリインストール"
+	@echo "  make install-zenoh-dry       - zenoh バイナリインストール（ドライラン）"

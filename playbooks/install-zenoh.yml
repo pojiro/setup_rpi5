@@ -1,0 +1,87 @@
+---
+- name: zenoh バイナリインストール
+  hosts: rpi5
+  become: yes
+  vars:
+    zenoh_version: "1.7.2"
+    zenoh_url: "https://github.com/eclipse-zenoh/zenoh/releases/download/{{ zenoh_version }}/zenoh-{{ zenoh_version }}-aarch64-unknown-linux-gnu-debian.zip"
+    zenoh_install_dir: "/usr/local/bin"
+    zenoh_temp_dir: "/tmp/zenoh-install"
+
+  tasks:
+    - name: システム情報確認
+      debug:
+        msg: |
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          アーキテクチャ: {{ ansible_architecture }}
+
+    - name: 必要なパッケージをインストール
+      apt:
+        name:
+          - unzip
+          - wget
+        state: present
+
+    - name: 一時ディレクトリ作成
+      file:
+        path: "{{ zenoh_temp_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: zenohバイナリをダウンロード
+      get_url:
+        url: "{{ zenoh_url }}"
+        dest: "{{ zenoh_temp_dir }}/zenoh-{{ zenoh_version }}.zip"
+        mode: '0644'
+      # ドライランでは一時ディレクトリが実際に作成されないためダウンロードが失敗する
+      # そのためドライラン時はエラーを無視
+      ignore_errors: "{{ ansible_check_mode }}"
+      register: zenoh_download_result
+
+    - name: ドライラン時のダウンロードエラー説明
+      debug:
+        msg: "ドライランでは一時ディレクトリが実際に作成されないため、ダウンロードエラーを無視しました"
+      when: ansible_check_mode and zenoh_download_result.failed
+
+    - name: zenohバイナリを展開
+      unarchive:
+        src: "{{ zenoh_temp_dir }}/zenoh-{{ zenoh_version }}.zip"
+        dest: "{{ zenoh_temp_dir }}"
+        remote_src: yes  # remote_src: yes：リモート → リモート
+      # ドライランではファイルがダウンロードされないため展開が失敗する
+      # そのためドライラン時はエラーを無視
+      ignore_errors: "{{ ansible_check_mode }}"
+      register: zenoh_extract_result
+
+    - name: ドライラン時の展開エラー説明
+      debug:
+        msg: "ドライランではファイルがダウンロードされないため、展開エラーを無視しました"
+      when: ansible_check_mode and zenoh_extract_result.failed
+
+    - name: zenohd パッケージをインストール
+      apt:
+        deb: "{{ zenoh_temp_dir }}/zenohd_{{ zenoh_version }}_arm64.deb"
+        state: present
+      # ドライランでは.debファイルが展開されないためインストールが失敗する
+      # そのためドライラン時はエラーを無視
+      ignore_errors: "{{ ansible_check_mode }}"
+      register: zenohd_install_result
+
+    - name: ドライラン時のインストールエラー説明
+      debug:
+        msg: "ドライランでは.debファイルが展開されないため、インストールエラーを無視しました"
+      when: ansible_check_mode and zenohd_install_result.failed
+
+    - name: zenohd バージョン確認
+      shell: zenohd --version
+      register: zenohd_version
+      changed_when: false
+
+    - name: zenohd インストール結果表示
+      debug:
+        msg: "{{ zenohd_version.stdout }}"
+
+    - name: 一時ディレクトリ削除
+      file:
+        path: "{{ zenoh_temp_dir }}"
+        state: absent
