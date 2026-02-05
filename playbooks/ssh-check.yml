@@ -1,0 +1,35 @@
+---
+- name: Raspberry Pi 5 SSH接続確認
+  hosts: rpi5
+  gather_facts: yes
+
+  tasks:
+    - name: SSH接続テスト
+      ping:
+
+    - name: システム情報取得
+      debug:
+        msg: |
+          ホスト名: {{ ansible_hostname }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          アーキテクチャ: {{ ansible_architecture }}
+          カーネル: {{ ansible_kernel }}
+          メモリ: {{ ansible_memtotal_mb }}MB
+
+    - name: ディスク使用量確認
+      shell: df -h /
+      register: disk_usage
+
+    - name: ディスク使用量表示
+      debug:
+        msg: "{{ disk_usage.stdout_lines }}"
+
+    - name: 温度確認（RPi5固有）
+      shell: vcgencmd measure_temp
+      register: cpu_temp
+      ignore_errors: yes
+
+    - name: CPU温度表示
+      debug:
+        msg: "CPU温度: {{ cpu_temp.stdout }}"
+      when: cpu_temp.rc == 0

@@ -1,0 +1,42 @@
+# Raspberry Pi 5 Ansible管理用Makefile
+
+.PHONY: ping check setup install clean
+
+# SSH接続確認
+ping:
+	ansible rpi5 -m ping
+
+# 詳細なSSH接続確認
+check:
+	ansible-playbook playbooks/ssh-check.yml
+
+# システム情報取得
+info:
+	ansible rpi5 -m setup
+
+# 構文チェック
+syntax-check:
+	ansible-playbook --syntax-check playbooks/ssh-check.yml
+
+# ドライラン
+dry-run:
+	ansible-playbook --check playbooks/ssh-check.yml
+
+# 詳細出力で実行
+verbose:
+	ansible-playbook -vvv playbooks/ssh-check.yml
+
+# インベントリ確認
+inventory:
+	ansible-inventory --list
+
+# ヘルプ
+help:
+	@echo "利用可能なコマンド:"
+	@echo "  make ping        - 基本的なSSH接続確認"
+	@echo "  make check       - 詳細なSSH接続確認とシステム情報取得"
+	@echo "  make info        - システム情報のみ取得"
+	@echo "  make syntax-check - playbook構文チェック"
+	@echo "  make dry-run     - ドライラン実行"
+	@echo "  make verbose     - 詳細出力で実行"
+	@echo "  make inventory   - インベントリ確認"
