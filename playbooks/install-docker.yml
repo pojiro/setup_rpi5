@@ -101,6 +101,12 @@
         msg: "ドライランではDockerがインストールされないため、サービス開始エラーを無視しました"
       when: ansible_check_mode and docker_service_result.failed
 
+    - name: ubuntuユーザーをdockerグループに追加
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
     - name: Dockerバージョン確認
       shell: docker --version
       register: docker_version
