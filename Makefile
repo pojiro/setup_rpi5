@@ -8,6 +8,7 @@
 	install-docker install-docker-dry \
 	install-zenoh install-zenoh-dry \
 	install-chrony reboot check-time-sync \
+	check-ip disable-dhcp-eth0 disable-dhcp-wlan0 \
 	dry-run verbose inventory help
 
 # SSH接続確認
@@ -77,6 +78,18 @@ reboot:
 check-time-sync:
 	ansible-playbook playbooks/check-time-sync.yml
 
+# IP アドレス確認
+check-ip:
+	ansible-playbook playbooks/check-ip.yml
+
+# eth0 DHCP 無効化
+disable-dhcp-eth0:
+	ansible-playbook playbooks/disable-dhcp-eth0.yml
+
+# wlan0 DHCP 無効化
+disable-dhcp-wlan0:
+	ansible-playbook playbooks/disable-dhcp-wlan0.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -109,3 +122,6 @@ help:
 	@echo "  make install-chrony          - chrony インストール"
 	@echo "  make reboot                  - システム再起動"
 	@echo "  make check-time-sync         - 時刻同期状態チェック"
+	@echo "  make check-ip                - IP アドレス確認"
+	@echo "  make disable-dhcp-eth0       - eth0 DHCP 無効化"
+	@echo "  make disable-dhcp-wlan0      - wlan0 DHCP 無効化"

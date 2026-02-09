@@ -1,0 +1,46 @@
+---
+- name: wlan0 DHCP 無効化
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: 現在の netplan 設定取得
+      shell: netplan get
+      register: netplan_before
+      changed_when: false
+
+    - name: eth0 の static IP 存在確認
+      shell: ip -4 addr show eth0 | awk '/inet / && $0 !~ /dynamic/ {print $2}'
+      register: eth0_static_ip
+      changed_when: false
+
+    - name: eth0 の static IP 未設定エラー
+      fail:
+        msg: "eth0 に static IPv4 が設定されていないため DHCP を無効化できません。"
+      when: eth0_static_ip.stdout == ""
+
+    - name: wlan0 の DHCP を無効化
+      shell: netplan set wifis.wlan0.dhcp4=false
+
+    - name: netplan 設定適用
+      shell: netplan apply
+
+    - name: 変更後の netplan 設定取得
+      shell: netplan get
+      register: netplan_after
+      changed_when: false
+
+    - name: wlan0 の IP 情報取得
+      shell: ip -4 addr show wlan0
+      register: wlan0_ip
+      changed_when: false
+
+    - name: 結果表示
+      debug:
+        msg:
+          - "===== netplan(before) ====="
+          - "{{ netplan_before.stdout_lines }}"
+          - "===== netplan(after) ====="
+          - "{{ netplan_after.stdout_lines }}"
+          - "===== wlan0 ====="
+          - "{{ wlan0_ip.stdout_lines }}"

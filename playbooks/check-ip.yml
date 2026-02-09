@@ -1,0 +1,24 @@
+---
+- name: IP アドレス確認
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: eth0 の IP 情報取得
+      shell: ip -4 addr show eth0
+      register: eth0_ip_info
+      changed_when: false
+
+    - name: wlan0 の IP 情報取得
+      shell: ip -4 addr show wlan0
+      register: wlan0_ip_info
+      changed_when: false
+      failed_when: false
+
+    - name: IP 情報表示
+      debug:
+        msg:
+          - "===== eth0 ====="
+          - "{{ eth0_ip_info.stdout_lines }}"
+          - "===== wlan0 ====="
+          - "{{ wlan0_ip_info.stdout_lines }}"
