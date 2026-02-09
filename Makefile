@@ -26,7 +26,14 @@ info:
 
 # 構文チェック
 syntax-check:
-	ansible-playbook --syntax-check playbooks/ssh-check.yml
+	@if [ -n "$(PLAYBOOK)" ]; then \
+		ansible-playbook --syntax-check playbooks/$(PLAYBOOK); \
+	else \
+		for f in playbooks/*.yml; do \
+			echo "Checking $$f..."; \
+			ansible-playbook --syntax-check $$f || exit 1; \
+		done; \
+	fi
 
 # 自動アップデート無効化
 disable-auto-update:
