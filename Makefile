@@ -4,7 +4,6 @@
 	ping \
 	ssh-check info syntax-check \
 	disable-auto-update disable-auto-update-dry \
-	setup-static-ip setup-static-ip-dry \
 	install-docker install-docker-dry \
 	install-zenoh install-zenoh-dry \
 	install-chrony reboot check-time-sync \
@@ -41,14 +40,6 @@ disable-auto-update:
 # 自動アップデート無効化（ドライラン）
 disable-auto-update-dry:
 	ansible-playbook --check playbooks/disable-auto-update.yml
-
-# 静的IP設定
-setup-static-ip:
-	ansible-playbook playbooks/setup-static-ip.yml
-
-# 静的IP設定（ドライラン）
-setup-static-ip-dry:
-	ansible-playbook --check playbooks/setup-static-ip.yml
 
 # Docker インストール
 install-docker:
@@ -117,8 +108,6 @@ help:
 	@echo "  make verbose     - 詳細出力で実行"
 	@echo "  make disable-auto-update     - 自動アップデート無効化"
 	@echo "  make disable-auto-update-dry - 自動アップデート無効化（ドライラン）"
-	@echo "  make setup-static-ip         - eth0静的IP設定"
-	@echo "  make setup-static-ip-dry     - eth0静的IP設定（ドライラン）"
 	@echo "  make install-docker          - Docker インストール"
 	@echo "  make install-docker-dry      - Docker インストール（ドライラン）"
 	@echo "  make install-zenoh           - zenoh バイナリインストール"
