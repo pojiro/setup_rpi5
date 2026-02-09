@@ -1,0 +1,90 @@
+---
+- name: 時刻同期状態チェック
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: chrony サービス状態確認
+      systemd:
+        name: chrony
+      register: chrony_service
+      failed_when: false
+
+    - name: chrony サービス状態表示
+      debug:
+        msg: "chrony サービス: {{ 'running' if chrony_service.status.ActiveState == 'active' else 'NOT running' }}"
+
+    - name: timedatectl 状態確認
+      shell: timedatectl
+      register: timedatectl_result
+      changed_when: false
+
+    - name: NTP 同期状態確認
+      shell: timedatectl show --property=NTPSynchronized --value
+      register: ntp_sync
+      changed_when: false
+
+    - name: chrony tracking 取得
+      shell: chronyc tracking
+      register: chrony_tracking
+      changed_when: false
+      failed_when: false
+
+    - name: Stratum 値取得
+      shell: chronyc tracking | grep "^Stratum" | awk '{print $3}'
+      register: stratum
+      changed_when: false
+      failed_when: false
+
+    - name: Leap status 取得
+      shell: chronyc tracking | grep "^Leap status" | awk '{print $4}'
+      register: leap_status
+      changed_when: false
+      failed_when: false
+
+    - name: System time offset 取得（秒）
+      shell: chronyc tracking | grep "^System time" | awk '{print $4, $5, $6}'
+      register: system_offset_sec
+      changed_when: false
+      failed_when: false
+
+    - name: System time offset 取得（ミリ秒）
+      shell: chronyc tracking | grep "^System time" | awk '{printf "%.3f ms %s\n", $4*1000, $6}'
+      register: system_offset_ms
+      changed_when: false
+      failed_when: false
+
+    - name: 同期状態判定
+      set_fact:
+        sync_ok: "{{
+          chrony_service.status.ActiveState == 'active' and
+          ntp_sync.stdout == 'yes' and
+          (stratum.stdout | int) < 16 and
+          leap_status.stdout == 'Normal'
+        }}"
+
+    - name: 時刻同期チェック結果
+      debug:
+        msg:
+          - "========================================"
+          - "ホスト: {{ inventory_hostname }}"
+          - "----------------------------------------"
+          - "chronyd サービス: {{ 'running ✓' if chrony_service.status.ActiveState == 'active' else 'NOT running ✗' }}"
+          - "NTP 同期: {{ 'YES ✓' if ntp_sync.stdout == 'yes' else 'NO ✗' }}"
+          - "Stratum: {{ stratum.stdout }} {{ '✓' if (stratum.stdout | int) < 16 else '✗' }}"
+          - "Leap status: {{ leap_status.stdout }} {{ '✓' if leap_status.stdout == 'Normal' else '✗' }}"
+          - "System offset: {{ system_offset_ms.stdout }} ({{ system_offset_sec.stdout }})"
+          - "----------------------------------------"
+          - "総合判定: {{ 'OK ✓' if sync_ok else 'NG ✗' }}"
+          - "========================================"
+
+    - name: 詳細情報表示
+      debug:
+        msg: "{{ chrony_tracking.stdout_lines }}"
+      when: sync_ok
+
+    - name: 同期失敗の警告
+      fail:
+        msg: "時刻同期に問題があります。上記の詳細を確認してください。"
+      when: not sync_ok
+      ignore_errors: yes

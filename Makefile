@@ -75,6 +75,10 @@ install-chrony:
 reboot:
 	ansible-playbook playbooks/reboot.yml
 
+# 時刻同期状態チェック
+check-time-sync:
+	ansible-playbook playbooks/check-time-sync.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -109,3 +113,4 @@ help:
 	@echo "  make install-zenoh-dry       - zenoh バイナリインストール（ドライラン）"
 	@echo "  make install-chrony          - chrony インストール"
 	@echo "  make reboot                  - システム再起動"
+	@echo "  make check-time-sync         - 時刻同期状態チェック"
