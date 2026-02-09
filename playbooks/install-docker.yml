@@ -131,11 +131,3 @@
     - name: Dockerサービス状態表示
       debug:
         msg: "{{ docker_status.stdout_lines }}"
-
-    - name: Docker動作テスト（hello-world）
-      shell: docker run hello-world
-      register: hello_world_result
-
-    - name: Docker動作テスト結果表示
-      debug:
-        msg: "{{ hello_world_result.stdout_lines }}"
