@@ -1,0 +1,17 @@
+---
+- name: apt upgrade 実行
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: パッケージリスト更新
+      apt:
+        update_cache: yes
+
+    - name: パッケージアップグレード
+      apt:
+        upgrade: dist
+
+    - name: 不要パッケージ削除
+      apt:
+        autoremove: yes

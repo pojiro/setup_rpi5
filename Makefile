@@ -9,7 +9,7 @@
 	install-zenoh install-zenoh-dry \
 	install-chrony reboot check-time-sync \
 	check-ip disable-dhcp-eth0 disable-dhcp-wlan0 \
-	dry-run verbose inventory help
+	apt-upgrade dry-run verbose inventory help
 
 # SSH接続確認
 ping:
@@ -82,6 +82,10 @@ check-time-sync:
 check-ip:
 	ansible-playbook playbooks/check-ip.yml
 
+# apt upgrade
+apt-upgrade:
+	ansible-playbook playbooks/apt-upgrade.yml
+
 # eth0 DHCP 無効化
 disable-dhcp-eth0:
 	ansible-playbook playbooks/disable-dhcp-eth0.yml
@@ -125,3 +129,4 @@ help:
 	@echo "  make check-ip                - IP アドレス確認"
 	@echo "  make disable-dhcp-eth0       - eth0 DHCP 無効化"
 	@echo "  make disable-dhcp-wlan0      - wlan0 DHCP 無効化"
+	@echo "  make apt-upgrade             - apt upgrade"
