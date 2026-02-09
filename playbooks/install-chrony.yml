@@ -1,0 +1,47 @@
+---
+- name: chrony インストール
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: パッケージリスト更新
+      apt:
+        update_cache: yes
+
+    - name: chrony をインストール
+      apt:
+        name: chrony
+        state: present
+
+    - name: chrony サービス開始・有効化
+      systemd:
+        name: chrony
+        state: started
+        enabled: yes
+
+    - name: chrony バージョン確認
+      shell: chronyc -v
+      register: chrony_version
+      changed_when: false
+
+    - name: インストール結果表示
+      debug:
+        msg: "{{ chrony_version.stdout }}"
+
+    - name: chrony 同期状態確認
+      shell: chronyc tracking
+      register: chrony_tracking
+      changed_when: false
+
+    - name: 同期状態表示
+      debug:
+        msg: "{{ chrony_tracking.stdout_lines }}"
+
+    - name: chrony 参照先確認
+      shell: chronyc sources -v
+      register: chrony_sources
+      changed_when: false
+
+    - name: 参照先表示
+      debug:
+        msg: "{{ chrony_sources.stdout_lines }}"

@@ -60,6 +60,10 @@ install-zenoh:
 install-zenoh-dry:
 	ansible-playbook --check playbooks/install-zenoh.yml
 
+# chrony インストール
+install-chrony:
+	ansible-playbook playbooks/install-chrony.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -92,3 +96,4 @@ help:
 	@echo "  make install-docker-dry      - Docker インストール（ドライラン）"
 	@echo "  make install-zenoh           - zenoh バイナリインストール"
 	@echo "  make install-zenoh-dry       - zenoh バイナリインストール（ドライラン）"
+	@echo "  make install-chrony          - chrony インストール"

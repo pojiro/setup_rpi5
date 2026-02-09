@@ -46,6 +46,13 @@ ansible rpi5-01 -m ping
 ansible rpi5 -m setup
 ```
 
+### chronyインストール
+
+```bash
+# 特定のホストにインストール
+ansible-playbook -l rpi5-00 playbooks/install-chrony.yml
+```
+
 ## トラブルシューティング
 
 - SSH接続エラー: IPアドレス、ユーザー名、SSH鍵を確認
