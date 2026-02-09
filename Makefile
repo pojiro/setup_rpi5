@@ -64,6 +64,10 @@ install-zenoh-dry:
 install-chrony:
 	ansible-playbook playbooks/install-chrony.yml
 
+# システム再起動
+reboot:
+	ansible-playbook playbooks/reboot.yml
+
 # ドライラン
 dry-run:
 	ansible-playbook --check playbooks/ssh-check.yml
@@ -97,3 +101,4 @@ help:
 	@echo "  make install-zenoh           - zenoh バイナリインストール"
 	@echo "  make install-zenoh-dry       - zenoh バイナリインストール（ドライラン）"
 	@echo "  make install-chrony          - chrony インストール"
+	@echo "  make reboot                  - システム再起動"

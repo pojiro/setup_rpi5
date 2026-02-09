@@ -1,0 +1,20 @@
+---
+- name: システム再起動
+  hosts: rpi5
+  become: yes
+
+  tasks:
+    - name: システムを再起動
+      reboot:
+        msg: "Ansible による再起動を実行します"
+        reboot_timeout: 600
+        test_command: uptime
+
+    - name: 再起動後のシステム稼働時間確認
+      shell: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: 稼働時間表示
+      debug:
+        msg: "{{ uptime_result.stdout }}"
