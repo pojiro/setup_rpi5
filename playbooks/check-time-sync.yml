@@ -4,6 +4,17 @@
   become: yes
 
   tasks:
+    - name: chrony インストール確認
+      shell: which chronyc
+      register: chrony_installed
+      changed_when: false
+      failed_when: false
+
+    - name: chrony 未インストールエラー
+      fail:
+        msg: "chrony がインストールされていません。先に install-chrony playbook を実行してください。"
+      when: chrony_installed.rc != 0
+
     - name: chrony サービス状態確認
       systemd:
         name: chrony
