@@ -4,8 +4,8 @@
   become: yes
 
   tasks:
-    - name: 現在の netplan 設定取得
-      shell: netplan get
+    - name: 現在の netplan 設定取得（機密情報除外）
+      shell: netplan get | grep -v -E 'access-points:|password:|key-management:|auth:|^\s+".+":'
       register: netplan_before
       changed_when: false
 
@@ -25,8 +25,8 @@
     - name: netplan 設定適用
       shell: netplan apply
 
-    - name: 変更後の netplan 設定取得
-      shell: netplan get
+    - name: 変更後の netplan 設定取得（機密情報除外）
+      shell: netplan get | grep -v -E 'access-points:|password:|key-management:|auth:|^\s+".+":'
       register: netplan_after
       changed_when: false
 
@@ -38,9 +38,9 @@
     - name: 結果表示
       debug:
         msg:
-          - "===== netplan(before) ====="
+          - "===== netplan(before) (access-pointsは非表示) ====="
           - "{{ netplan_before.stdout_lines }}"
-          - "===== netplan(after) ====="
+          - "===== netplan(after) (access-pointsは非表示) ====="
           - "{{ netplan_after.stdout_lines }}"
-          - "===== eth0 ====="
+          - "===== eth0 ip ====="
           - "{{ eth0_ip.stdout_lines }}"
