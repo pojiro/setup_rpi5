@@ -46,6 +46,15 @@ ansible rpi5-01 -m ping
 ansible rpi5 -m setup
 ```
 
+### 静的IP設定
+
+特定のホストに対して静的IPを設定する場合：
+
+```bash
+# rpi5-02に192.168.0.102を設定する例
+ansible-playbook -l rpi5-02 -e "static_ip=192.168.0.102" playbooks/setup-static-ip.yml
+```
+
 ### chronyインストール
 
 ```bash
