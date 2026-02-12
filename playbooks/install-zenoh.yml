@@ -85,3 +85,16 @@
       file:
         path: "{{ zenoh_temp_dir }}"
         state: absent
+
+    - name: zenohd-control.sh をホームディレクトリに配置
+      copy:
+        src: files/zenohd-control.sh
+        dest: "/home/{{ ansible_user }}/zenohd-control.sh"
+        mode: '0755'
+      become: no
+
+    - name: zenohd スクリプト配置完了
+      debug:
+        msg: |
+          zenohd のコントロールスクリプトをホームディレクトリに配置しました
+          使用方法: ~/zenohd-control.sh {start|stop}
